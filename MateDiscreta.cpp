@@ -79,7 +79,6 @@ Vector2 ConvertirAPantalla(Vector2 mathP, int origenX, int origenY) {
     return { mathP.x + origenX, origenY - mathP.y };
 }
 
-// Interpolación Lineal para la animación progresiva
 Vector2 Lerp(Vector2 a, Vector2 b, float t) {
     return { a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t };
 }
@@ -106,11 +105,14 @@ int main() {
     bool editX = false;
     bool editY = false;
 
-    bool dropdownEditMode = false;
+    // Dos variables independientes para los dos menús desplegables
+    bool dropdownTransformacionEdit = false;
+    bool dropdownReflexionEdit = false;
+
     int transformacionSeleccionada = 0;
     float valorAngulo = 90.0f;
     float valorEscala = 1.5f;
-    int ejeReflexion = 0;
+    int ejeReflexion = 0; // 0: X, 1: Y, 2: Origen, 3: Y=X, 4: Y=-X
 
     float animacionT = 1.0f;
 
@@ -132,41 +134,33 @@ int main() {
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        // 1. Dibujar Plano Cartesiano
         DrawLine(0, origenY, screenWidth - 350, origenY, LIGHTGRAY);
         DrawLine(origenX, 0, origenX, screenHeight, LIGHTGRAY);
         DrawCircle(origenX, origenY, 4, RED);
 
-        // 2. Convertir coordenadas a pantalla incondicionalmente
         vector<Vector2> puntosPantalla;
         for (auto p : figuraAnimada) {
             puntosPantalla.push_back(ConvertirAPantalla(p, origenX, origenY));
         }
 
-        // 3. Dibujar la figura dependiendo de cuántos puntos hay
         if (puntosPantalla.size() >= 3) {
             vector<Vector2> triangulos = TriangularPoligono(puntosPantalla);
 
-            // Dibujar Relleno
             Color colorRelleno = { 0, 121, 241, 150 };
             for (size_t i = 0; i + 2 < triangulos.size(); i += 3) {
                 DrawTriangle(triangulos[i], triangulos[i + 1], triangulos[i + 2], colorRelleno);
             }
 
-            // Dibujar Contorno
             for (size_t i = 0; i < puntosPantalla.size(); i++) {
                 int sig = (i + 1) % puntosPantalla.size();
                 DrawLineEx(puntosPantalla[i], puntosPantalla[sig], 3.0f, DARKBLUE);
             }
         }
         else if (puntosPantalla.size() == 2) {
-            // Si solo hay 2 puntos, dibujar la línea que los conecta
             DrawLineEx(puntosPantalla[0], puntosPantalla[1], 3.0f, DARKBLUE);
         }
 
-        // 4. SIEMPRE dibujar los puntos (vértices) individuales
         for (size_t i = 0; i < puntosPantalla.size(); i++) {
-            // Dibuja un círculo rojo oscuro en cada vértice
             DrawCircleV(puntosPantalla[i], 5.0f, MAROON);
         }
 
@@ -179,6 +173,7 @@ int main() {
 
         DrawText("DASHBOARD DE MATRICES", (int)panelX + 50, 20, 20, DARKBLUE);
 
+        // --- SECCIÓN 1: Ingreso de Puntos ---
         GuiGroupBox(Rectangle{ panelX + 20.0f, 60.0f, 310.0f, 140.0f }, "1. GESTION DE PUNTOS");
 
         GuiLabel(Rectangle{ panelX + 40.0f, 80.0f, 20.0f, 30.0f }, "X:");
@@ -205,22 +200,24 @@ int main() {
 
         DrawText(TextFormat("Vertices actuales: %d", figuraOriginal.size()), (int)panelX + 40, 165, 14, DARKGRAY);
 
-        GuiGroupBox(Rectangle{ panelX + 20.0f, 220.0f, 310.0f, 200.0f }, "2. PARÁMETROS MATEMÁTICOS");
+        // --- SECCIÓN 2: Parámetros Matemáticos ---
+        GuiGroupBox(Rectangle{ panelX + 20.0f, 220.0f, 310.0f, 220.0f }, "2. PARÁMETROS MATEMÁTICOS");
 
+        // Dibujamos primero los controles secundarios (Sliders)
         if (transformacionSeleccionada == 0) {
-            DrawText(TextFormat("Angulo (Grados): %.1f", valorAngulo), (int)panelX + 40, 250, 16, BLACK);
-            GuiSliderBar(Rectangle{ panelX + 40.0f, 280.0f, 270.0f, 20.0f }, "-360", "360", &valorAngulo, -360.0f, 360.0f);
+            DrawText(TextFormat("Angulo (Grados): %.1f", valorAngulo), (int)panelX + 40, 350, 16, BLACK);
+            GuiSliderBar(Rectangle{ panelX + 40.0f, 380.0f, 270.0f, 20.0f }, "-360", "360", &valorAngulo, -360.0f, 360.0f);
         }
         else if (transformacionSeleccionada == 1) {
-            DrawText(TextFormat("Factor Escala (k): %.2f", valorEscala), (int)panelX + 40, 250, 16, BLACK);
-            GuiSliderBar(Rectangle{ panelX + 40.0f, 280.0f, 270.0f, 20.0f }, "0.1", "3.0", &valorEscala, 0.1f, 3.0f);
-        }
-        else if (transformacionSeleccionada == 2) {
-            DrawText("Eje de Reflexion:", (int)panelX + 40, 250, 16, BLACK);
-            GuiToggleGroup(Rectangle{ panelX + 40.0f, 280.0f, 130.0f, 30.0f }, "EJE X;EJE Y", &ejeReflexion);
+            DrawText(TextFormat("Factor Escala (k): %.2f", valorEscala), (int)panelX + 40, 350, 16, BLACK);
+            GuiSliderBar(Rectangle{ panelX + 40.0f, 380.0f, 270.0f, 20.0f }, "0.1", "3.0", &valorEscala, 0.1f, 3.0f);
         }
 
-        if (GuiButton(Rectangle{ panelX + 20.0f, 440.0f, 310.0f, 50.0f }, "APLICAR TRANSFORMACIÓN (Animar)")) {
+        // --- SECCIÓN 3: Botón Aplicar ---
+        // Protegemos el botón para que no se presione por accidente si un menú está abierto
+        if (dropdownTransformacionEdit || dropdownReflexionEdit) GuiDisable();
+
+        if (GuiButton(Rectangle{ panelX + 20.0f, 460.0f, 310.0f, 50.0f }, "APLICAR TRANSFORMACIÓN (Animar)")) {
             figuraOriginal = figuraObjetivo;
             animacionT = 0.0f;
 
@@ -228,25 +225,42 @@ int main() {
                 float px = figuraOriginal[i].x;
                 float py = figuraOriginal[i].y;
 
-                if (transformacionSeleccionada == 0) {
+                if (transformacionSeleccionada == 0) { // ROTACION
                     float rad = valorAngulo * (PI / 180.0f);
                     figuraObjetivo[i].x = px * cos(rad) - py * sin(rad);
                     figuraObjetivo[i].y = px * sin(rad) + py * cos(rad);
                 }
-                else if (transformacionSeleccionada == 1) {
+                else if (transformacionSeleccionada == 1) { // HOMOTECIA
                     figuraObjetivo[i].x = px * valorEscala;
                     figuraObjetivo[i].y = py * valorEscala;
                 }
-                else if (transformacionSeleccionada == 2) {
-                    if (ejeReflexion == 0) figuraObjetivo[i].y = -py;
-                    if (ejeReflexion == 1) figuraObjetivo[i].x = -px;
+                else if (transformacionSeleccionada == 2) { // REFLEXION
+                    if (ejeReflexion == 0) { figuraObjetivo[i].x = px; figuraObjetivo[i].y = -py; } // Eje X
+                    if (ejeReflexion == 1) { figuraObjetivo[i].x = -px; figuraObjetivo[i].y = py; } // Eje Y
+                    if (ejeReflexion == 2) { figuraObjetivo[i].x = -px; figuraObjetivo[i].y = -py; } // Origen
+                    if (ejeReflexion == 3) { figuraObjetivo[i].x = py; figuraObjetivo[i].y = px; } // Y = X
+                    if (ejeReflexion == 4) { figuraObjetivo[i].x = -py; figuraObjetivo[i].y = -px; } // Y = -X
                 }
             }
         }
 
-        GuiLabel(Rectangle{ panelX + 20.0f, 510.0f, 200.0f, 20.0f }, "Tipo de Transformacion:");
-        if (GuiDropdownBox(Rectangle{ panelX + 20.0f, 535.0f, 310.0f, 35.0f }, "ROTACION;HOMOTECIA;REFLEXION", &transformacionSeleccionada, dropdownEditMode)) {
-            dropdownEditMode = !dropdownEditMode;
+        GuiEnable(); // Volvemos a habilitar la interfaz
+
+        // --- DIBUJAR LOS MENÚS DESPLEGABLES AL FINAL ---
+        // Se dibujan al final para que queden visualmente "encima" de todo lo demás
+
+        // Menú Secundario: Tipos de Reflexión (Solo aparece si seleccionamos Reflexión)
+        if (transformacionSeleccionada == 2) {
+            DrawText("Seleccione la Reflexion:", (int)panelX + 40, 350, 16, BLACK);
+            if (GuiDropdownBox(Rectangle{ panelX + 40.0f, 375.0f, 270.0f, 30.0f }, "Eje X;Eje Y;Origen;Recta Y = X;Recta Y = -X", &ejeReflexion, dropdownReflexionEdit)) {
+                dropdownReflexionEdit = !dropdownReflexionEdit;
+            }
+        }
+
+        // Menú Principal: Tipo de Transformación (Arriba de todo)
+        GuiLabel(Rectangle{ panelX + 40.0f, 240.0f, 200.0f, 20.0f }, "Tipo de Transformacion:");
+        if (GuiDropdownBox(Rectangle{ panelX + 40.0f, 265.0f, 270.0f, 30.0f }, "ROTACION;HOMOTECIA;REFLEXION", &transformacionSeleccionada, dropdownTransformacionEdit)) {
+            dropdownTransformacionEdit = !dropdownTransformacionEdit;
         }
 
         EndDrawing();
