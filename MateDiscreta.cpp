@@ -1,4 +1,4 @@
-#include "pch.h" // Si Visual Studio te da error aquí, puedes borrar esta línea.
+#include "pch.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -85,49 +85,42 @@ Vector2 Lerp(Vector2 a, Vector2 b, float t) {
 }
 
 int main() {
-    const int screenWidth = 1000; // Más ancho para el panel
+    const int screenWidth = 1000;
     const int screenHeight = 650;
 
     InitWindow(screenWidth, screenHeight, "Dashboard - Transformaciones Lineales 2D");
     SetTargetFPS(60);
 
-    // Estilo de la Interfaz
     GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
 
-    // Centro del plano cartesiano (Desplazado a la izquierda para dejar espacio al panel)
     int origenX = (screenWidth - 350) / 2;
     int origenY = screenHeight / 2;
 
     // --- VARIABLES DE ESTADO Y UI ---
-    // Figura por defecto (Cuadrado tipo "pixel")
     vector<Vector2> figuraOriginal = { {50, 50}, {150, 50}, {150, 150}, {50, 150} };
     vector<Vector2> figuraObjetivo = figuraOriginal;
     vector<Vector2> figuraAnimada = figuraOriginal;
 
-    // Variables de cajas de texto
     char inputX[16] = "";
     char inputY[16] = "";
     bool editX = false;
     bool editY = false;
 
-    // Variables de Transformación
     bool dropdownEditMode = false;
-    int transformacionSeleccionada = 0; // 0: Rotación, 1: Homotecia, 2: Reflexión
+    int transformacionSeleccionada = 0;
     float valorAngulo = 90.0f;
     float valorEscala = 1.5f;
-    int ejeReflexion = 0; // 0: Eje X, 1: Eje Y
+    int ejeReflexion = 0;
 
-    // Variables de Animación
-    float animacionT = 1.0f; // 1.0 significa que la animación terminó
+    float animacionT = 1.0f;
 
     while (!WindowShouldClose()) {
 
         // --- LÓGICA DE ANIMACIÓN PROGRESIVA ---
         if (animacionT < 1.0f) {
-            animacionT += 0.015f; // Velocidad de la animación
+            animacionT += 0.015f;
             if (animacionT > 1.0f) animacionT = 1.0f;
 
-            // Calcular puntos intermedios
             for (size_t i = 0; i < figuraOriginal.size(); i++) {
                 figuraAnimada[i] = Lerp(figuraOriginal[i], figuraObjetivo[i], animacionT);
             }
@@ -140,19 +133,22 @@ int main() {
         ClearBackground(RAYWHITE);
 
         // 1. Dibujar Plano Cartesiano
-        DrawLine(0, origenY, screenWidth - 350, origenY, LIGHTGRAY); // Eje X
-        DrawLine(origenX, 0, origenX, screenHeight, LIGHTGRAY);      // Eje Y
-        DrawCircle(origenX, origenY, 4, RED); // Centro
+        DrawLine(0, origenY, screenWidth - 350, origenY, LIGHTGRAY);
+        DrawLine(origenX, 0, origenX, screenHeight, LIGHTGRAY);
+        DrawCircle(origenX, origenY, 4, RED);
 
-        // 2. Convertir coordenadas animadas a pantalla y Triangular
-        if (figuraAnimada.size() >= 3) {
-            vector<Vector2> puntosPantalla;
-            for (auto p : figuraAnimada) puntosPantalla.push_back(ConvertirAPantalla(p, origenX, origenY));
+        // 2. Convertir coordenadas a pantalla incondicionalmente
+        vector<Vector2> puntosPantalla;
+        for (auto p : figuraAnimada) {
+            puntosPantalla.push_back(ConvertirAPantalla(p, origenX, origenY));
+        }
 
+        // 3. Dibujar la figura dependiendo de cuántos puntos hay
+        if (puntosPantalla.size() >= 3) {
             vector<Vector2> triangulos = TriangularPoligono(puntosPantalla);
 
             // Dibujar Relleno
-            Color colorRelleno = { 0, 121, 241, 150 }; // Azul semitransparente
+            Color colorRelleno = { 0, 121, 241, 150 };
             for (size_t i = 0; i + 2 < triangulos.size(); i += 3) {
                 DrawTriangle(triangulos[i], triangulos[i + 1], triangulos[i + 2], colorRelleno);
             }
@@ -163,18 +159,26 @@ int main() {
                 DrawLineEx(puntosPantalla[i], puntosPantalla[sig], 3.0f, DARKBLUE);
             }
         }
+        else if (puntosPantalla.size() == 2) {
+            // Si solo hay 2 puntos, dibujar la línea que los conecta
+            DrawLineEx(puntosPantalla[0], puntosPantalla[1], 3.0f, DARKBLUE);
+        }
+
+        // 4. SIEMPRE dibujar los puntos (vértices) individuales
+        for (size_t i = 0; i < puntosPantalla.size(); i++) {
+            // Dibuja un círculo rojo oscuro en cada vértice
+            DrawCircleV(puntosPantalla[i], 5.0f, MAROON);
+        }
 
         // ==========================================
         // DIBUJO DEL PANEL DE CONTROL (RAYGUI)
         // ==========================================
-        float panelX = screenWidth - 350.0f; // <-- Convertido a float para evitar el error C2397
+        float panelX = screenWidth - 350.0f;
         DrawRectangle((int)panelX, 0, 350, screenHeight, Fade(LIGHTGRAY, 0.4f));
         DrawLine((int)panelX, 0, (int)panelX, screenHeight, GRAY);
 
         DrawText("DASHBOARD DE MATRICES", (int)panelX + 50, 20, 20, DARKBLUE);
 
-        // --- SECCIÓN 1: Ingreso de Vértices ---
-        // Sintaxis C++ correcta: Rectangle{...} en lugar de (Rectangle){...}
         GuiGroupBox(Rectangle{ panelX + 20.0f, 60.0f, 310.0f, 140.0f }, "1. GESTION DE PUNTOS");
 
         GuiLabel(Rectangle{ panelX + 40.0f, 80.0f, 20.0f, 30.0f }, "X:");
@@ -201,7 +205,6 @@ int main() {
 
         DrawText(TextFormat("Vertices actuales: %d", figuraOriginal.size()), (int)panelX + 40, 165, 14, DARKGRAY);
 
-        // --- SECCIÓN 2: Opciones Dinámicas ---
         GuiGroupBox(Rectangle{ panelX + 20.0f, 220.0f, 310.0f, 200.0f }, "2. PARÁMETROS MATEMÁTICOS");
 
         if (transformacionSeleccionada == 0) {
@@ -217,7 +220,6 @@ int main() {
             GuiToggleGroup(Rectangle{ panelX + 40.0f, 280.0f, 130.0f, 30.0f }, "EJE X;EJE Y", &ejeReflexion);
         }
 
-        // --- SECCIÓN 3: Botón de Ejecución (Las Matemáticas) ---
         if (GuiButton(Rectangle{ panelX + 20.0f, 440.0f, 310.0f, 50.0f }, "APLICAR TRANSFORMACIÓN (Animar)")) {
             figuraOriginal = figuraObjetivo;
             animacionT = 0.0f;
@@ -242,7 +244,6 @@ int main() {
             }
         }
 
-        // --- SECCIÓN 4: Menú Desplegable ---
         GuiLabel(Rectangle{ panelX + 20.0f, 510.0f, 200.0f, 20.0f }, "Tipo de Transformacion:");
         if (GuiDropdownBox(Rectangle{ panelX + 20.0f, 535.0f, 310.0f, 35.0f }, "ROTACION;HOMOTECIA;REFLEXION", &transformacionSeleccionada, dropdownEditMode)) {
             dropdownEditMode = !dropdownEditMode;
