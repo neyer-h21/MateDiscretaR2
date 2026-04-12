@@ -4,7 +4,9 @@
 #include <string>
 #include <algorithm> // Necesario para std::reverse
 #include "raylib.h"
+#include "raygui.h"
 
+#define RAYGUI_IMPLEMENTATION
 using namespace std;
 
 int frameCount = 0;
