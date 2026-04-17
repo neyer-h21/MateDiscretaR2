@@ -87,7 +87,7 @@ int main() {
     const int screenWidth = 1000;
     const int screenHeight = 650;
 
-    InitWindow(screenWidth, screenHeight, "Dashboard - Transformaciones Lineales 2D");
+    InitWindow(screenWidth, screenHeight, "VectraLab");
     SetTargetFPS(60);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
