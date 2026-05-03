@@ -166,9 +166,9 @@ int main() {
     float escalaDestinoAnimacion = 1.0f;
 
     // Variables matemáticas para llevar el control temporal de la animación del SPRITE (Modo Videojuego)
-    float spriteStartAngle = 0.0f;  float spriteTargetAngle = 0.0f;  float spriteCurrentAngle = 0.0f;
-    float spriteStartScaleX = 1.0f; float spriteTargetScaleX = 1.0f; float spriteCurrentScaleX = 1.0f;
-    float spriteStartScaleY = 1.0f; float spriteTargetScaleY = 1.0f; float spriteCurrentScaleY = 1.0f;
+    float imgAngInicial = 0.0f;  float imgAngFinal = 0.0f;  float imgAngActual = 0.0f;
+    float imgEscalaInicialX = 1.0f; float imgEscalaFinalX = 1.0f; float imgEscalaActualX = 1.0f;
+    float imgEscalaInicialY = 1.0f; float imgEscalaFinalY = 1.0f; float imgEscalaActualY = 1.0f;
 
     // El parámetro 't' de tiempo para las interpolaciones (Va de 0.0 a 1.0)
     float animacionT = 1.0f;
@@ -193,9 +193,9 @@ int main() {
             anguloActualVisual = 0.0f; anguloInicioAnimacion = 0.0f; anguloDestinoAnimacion = 0.0f;
             escalaActualVisual = 1.0f; escalaInicioAnimacion = 1.0f; escalaDestinoAnimacion = 1.0f;
 
-            spriteStartAngle = 0.0f;  spriteTargetAngle = 0.0f;  spriteCurrentAngle = 0.0f;
-            spriteStartScaleX = 1.0f; spriteTargetScaleX = 1.0f; spriteCurrentScaleX = 1.0f;
-            spriteStartScaleY = 1.0f; spriteTargetScaleY = 1.0f; spriteCurrentScaleY = 1.0f;
+            imgAngInicial = 0.0f;  imgAngFinal = 0.0f;  imgAngActual = 0.0f;
+            imgEscalaInicialX = 1.0f; imgEscalaFinalX = 1.0f; imgEscalaActualX = 1.0f;
+            imgEscalaInicialY = 1.0f; imgEscalaFinalY = 1.0f; imgEscalaActualY = 1.0f;
 
             transformacionPrevia = transformacionSeleccionada;
             ejeReflexionPrevio = ejeReflexion;
@@ -213,16 +213,16 @@ int main() {
             float smoothT = animacionT * animacionT * (3.0f - 2.0f * animacionT);
 
             // Interpolamos el ángulo para el modo videojuego
-            spriteCurrentAngle = InterpolarValor(spriteStartAngle, spriteTargetAngle, smoothT);
+            imgAngActual = InterpolarValor(imgAngInicial, imgAngFinal, smoothT);
 
             // Interpolamos la escala para el modo videojuego (evitando distorsiones raras si es reflexión)
             if (transformacionSeleccionada == 2) {
-                spriteCurrentScaleX = spriteTargetScaleX;
-                spriteCurrentScaleY = spriteTargetScaleY;
+                imgEscalaActualX = imgEscalaFinalX;
+                imgEscalaActualY = imgEscalaFinalY;
             }
             else {
-                spriteCurrentScaleX = InterpolarValor(spriteStartScaleX, spriteTargetScaleX, smoothT);
-                spriteCurrentScaleY = InterpolarValor(spriteStartScaleY, spriteTargetScaleY, smoothT);
+                imgEscalaActualX = InterpolarValor(imgEscalaInicialX, imgEscalaFinalX, smoothT);
+                imgEscalaActualY = InterpolarValor(imgEscalaInicialY, imgEscalaFinalY, smoothT);
             }
 
             // Aplicamos las transformaciones algebraicas vértice por vértice
@@ -408,19 +408,19 @@ int main() {
                 // Dibujar el Sprite Animado aplicando los parámetros matemáticos transformados
                 Vector2 posPantalla = ConvertirAPantalla(centroAnimadoMath, origenX, origenY);
 
-                float finalW = baseWidth * fabs(spriteCurrentScaleX); // Aplicar factor de escalado a la base
-                float finalH = baseHeight * fabs(spriteCurrentScaleY);
+                float finalW = baseWidth * fabs(imgEscalaActualX); // Aplicar factor de escalado a la base
+                float finalH = baseHeight * fabs(imgEscalaActualY);
 
                 // Truco de gráficos: Para hacer una reflexión de una imagen, le decimos al programa
                 // que la dibuje con anchura o altura negativa (-texW o -texH).
-                float sourceW = (spriteCurrentScaleX < 0) ? -texW : texW;
-                float sourceH = (spriteCurrentScaleY < 0) ? -texH : texH;
+                float sourceW = (imgEscalaActualX < 0) ? -texW : texW;
+                float sourceH = (imgEscalaActualY < 0) ? -texH : texH;
 
                 Rectangle sourceRec = { 0.0f, 0.0f, sourceW, sourceH }; // Qué parte de la imagen mostrar (Toda)
                 Rectangle destRec = { posPantalla.x, posPantalla.y, finalW, finalH }; // Dónde dibujarla y de qué tamaño
                 Vector2 origin = { finalW / 2.0f, finalH / 2.0f };
 
-                DrawTexturePro(texturaPersonaje, sourceRec, destRec, origin, -spriteCurrentAngle, WHITE); // Dibuja rotado
+                DrawTexturePro(texturaPersonaje, sourceRec, destRec, origin, -imgAngActual, WHITE); // Dibuja rotado
             }
             else if (figuraOriginal.size() == 0) {
                 DrawText("Agrega al menos 1 punto (ej. X=100, Y=100) para anclar el personaje.", origenX - 220, origenY - 20, 16, DARKGRAY);
@@ -470,9 +470,9 @@ int main() {
                 valorAngulo = 0.0f; valorEscala = 1.0f;
                 anguloActualVisual = 0.0f; escalaActualVisual = 1.0f;
 
-                spriteStartAngle = 0.0f;  spriteTargetAngle = 0.0f;  spriteCurrentAngle = 0.0f;
-                spriteStartScaleX = 1.0f; spriteTargetScaleX = 1.0f; spriteCurrentScaleX = 1.0f;
-                spriteStartScaleY = 1.0f; spriteTargetScaleY = 1.0f; spriteCurrentScaleY = 1.0f;
+                imgAngInicial = 0.0f;  imgAngFinal = 0.0f;  imgAngActual = 0.0f;
+                imgEscalaInicialX = 1.0f; imgEscalaFinalX = 1.0f; imgEscalaActualX = 1.0f;
+                imgEscalaInicialY = 1.0f; imgEscalaFinalY = 1.0f; imgEscalaActualY = 1.0f;
             }
             catch (...) {} // El bloque Try-Catch evita que el programa se cierre si el usuario escribe letras en lugar de números
         }
@@ -512,39 +512,40 @@ int main() {
             anguloDestinoAnimacion = valorAngulo;
             escalaDestinoAnimacion = valorEscala;
 
-            spriteStartAngle = spriteCurrentAngle;
-            spriteStartScaleX = spriteCurrentScaleX;
-            spriteStartScaleY = spriteCurrentScaleY;
+            imgAngInicial = imgAngActual;
+            imgEscalaInicialX = imgEscalaActualX;
+            imgEscalaInicialY = imgEscalaActualY;
 
-            spriteTargetAngle = 0.0f;
-            spriteTargetScaleX = 1.0f;
-            spriteTargetScaleY = 1.0f;
+            imgAngFinal = 0.0f;
+            imgEscalaFinalX = 1.0f;
+            imgEscalaFinalY = 1.0f;
+
 
             // Configuración de escalas destino para sprites basados en la transformación
             if (transformacionSeleccionada == 0) {
-                spriteTargetAngle = valorAngulo;
+                imgAngFinal = valorAngulo;
             }
             else if (transformacionSeleccionada == 1) {
-                spriteTargetScaleX = valorEscala;
-                spriteTargetScaleY = valorEscala;
+                imgEscalaFinalX = valorEscala;
+                imgEscalaFinalY = valorEscala;
             }
             else if (transformacionSeleccionada == 2) { // Efectos espejo para la imagen
                 if (ejeReflexion == 0) {
-                    spriteTargetScaleX = 1.0f; spriteTargetScaleY = -1.0f;
+                    imgEscalaFinalX = 1.0f; imgEscalaFinalY = -1.0f;
                 }
                 else if (ejeReflexion == 1) {
-                    spriteTargetScaleX = -1.0f; spriteTargetScaleY = 1.0f;
+                    imgEscalaFinalX = -1.0f; imgEscalaFinalY = 1.0f;
                 }
                 else if (ejeReflexion == 2) {
-                    spriteTargetAngle = 180.0f;
+                    imgAngFinal = 180.0f;
                 }
                 else if (ejeReflexion == 3) {
-                    spriteTargetScaleY = -1.0f;
-                    spriteTargetAngle = 90.0f;
+                    imgEscalaFinalY = -1.0f;
+                    imgAngFinal = 90.0f;
                 }
                 else if (ejeReflexion == 4) {
-                    spriteTargetScaleY = -1.0f;
-                    spriteTargetAngle = -90.0f;
+                    imgEscalaFinalY = -1.0f;
+                    imgAngFinal = -90.0f;
                 }
             }
 
