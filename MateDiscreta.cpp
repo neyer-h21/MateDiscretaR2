@@ -99,9 +99,9 @@ Vector2 ConvertirAPantalla(Vector2 mathP, int origenX, int origenY) {
     return { mathP.x + (float)origenX, (float)origenY - mathP.y };
 }
 
-// Interpolación Lineal (Lerp) para Vectores: Calcula un punto intermedio entre A y B según un porcentaje 't'.
+// Interpolación Lineal (InterpolarPuntos) para Vectores: Calcula un punto intermedio entre A y B según un porcentaje 't'.
 // Es clave para que la animación se vea fluida y no "salte" de golpe al resultado final.
-Vector2 Lerp(Vector2 a, Vector2 b, float t) {
+Vector2 InterpolarPuntos(Vector2 a, Vector2 b, float t) {
     return { a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t };
 }
 
@@ -259,7 +259,7 @@ int main() {
                     }
                     else {
                         // Las demás reflexiones simplemente se mueven en línea recta hacia su destino
-                        figuraAnimada[i] = Lerp(figuraInicioAnimacion[i], figuraObjetivo[i], smoothT);
+                        figuraAnimada[i] = InterpolarPuntos(figuraInicioAnimacion[i], figuraObjetivo[i], smoothT);
                     }
                 }
             }
