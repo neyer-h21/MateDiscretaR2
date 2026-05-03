@@ -141,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="app.ico" />
+    <Image Include="personaje.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
