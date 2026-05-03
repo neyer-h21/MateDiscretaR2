@@ -142,8 +142,8 @@ int main() {
     bool editY = false;
 
     // Variables de control para los menús desplegables
-    bool dropdownTransformacionEdit = false;
-    bool dropdownReflexionEdit = false;
+    bool menuTransfAbierto = false;
+    bool menuReflexAbierto = false;
 
     // Estados de las transformaciones
     int transformacionSeleccionada = 0; // 0=Rotación, 1=Homotecia, 2=Reflexión
@@ -498,7 +498,7 @@ int main() {
         }
 
         // Si los menús desplegables están abiertos, deshabilitamos el botón de atrás para que no se presione por error
-        if (dropdownTransformacionEdit || dropdownReflexionEdit) GuiDisable();
+        if (menuTransfAbierto || menuReflexAbierto) GuiDisable();
 
         // ==========================================
         // BOTÓN: APLICAR TRANSFORMACIÓN (EL CEREBRO MATEMÁTICO PRINCIPAL)
@@ -582,15 +582,15 @@ int main() {
         // Menú desplegable para elegir el EJE de REFLEXIÓN (Solo se muestra si la opción de transformación es 2)
         if (transformacionSeleccionada == 2) {
             DrawText("Seleccione la Reflexion:", (int)panelX + 40, 360, 16, BLACK);
-            if (GuiDropdownBox(Rectangle{ panelX + 40.0f, 385.0f, 270.0f, 30.0f }, "Eje X;Eje Y;Origen;Recta Y = X;Recta Y = -X", &ejeReflexion, dropdownReflexionEdit)) {
-                dropdownReflexionEdit = !dropdownReflexionEdit;
+            if (GuiDropdownBox(Rectangle{ panelX + 40.0f, 385.0f, 270.0f, 30.0f }, "Eje X;Eje Y;Origen;Recta Y = X;Recta Y = -X", &ejeReflexion, menuReflexAbierto)) {
+                menuReflexAbierto = !menuReflexAbierto;
             }
         }
 
         // Menú desplegable para elegir el TIPO de TRANSFORMACIÓN (El orden importa para los índices: 0, 1, 2)
         GuiLabel(Rectangle{ panelX + 40.0f, 250.0f, 200.0f, 20.0f }, "Tipo de Transformacion:");
-        if (GuiDropdownBox(Rectangle{ panelX + 40.0f, 275.0f, 270.0f, 30.0f }, "ROTACION;HOMOTECIA;REFLEXION", &transformacionSeleccionada, dropdownTransformacionEdit)) {
-            dropdownTransformacionEdit = !dropdownTransformacionEdit;
+        if (GuiDropdownBox(Rectangle{ panelX + 40.0f, 275.0f, 270.0f, 30.0f }, "ROTACION;HOMOTECIA;REFLEXION", &transformacionSeleccionada, menuTransfAbierto)) {
+            menuTransfAbierto = !menuTransfAbierto;
         }
 
         EndDrawing(); // Finaliza este fotograma y lo envía al monitor
