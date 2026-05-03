@@ -106,7 +106,7 @@ Vector2 InterpolarPuntos(Vector2 a, Vector2 b, float t) {
 }
 
 // Interpolación Lineal para números flotantes sueltos (usado para ángulos y escalas).
-float LerpFloat(float start, float end, float t) {
+float InterpolarValor(float start, float end, float t) {
     return start + (end - start) * t;
 }
 
@@ -213,7 +213,7 @@ int main() {
             float smoothT = animacionT * animacionT * (3.0f - 2.0f * animacionT);
 
             // Interpolamos el ángulo para el modo videojuego
-            spriteCurrentAngle = LerpFloat(spriteStartAngle, spriteTargetAngle, smoothT);
+            spriteCurrentAngle = InterpolarValor(spriteStartAngle, spriteTargetAngle, smoothT);
 
             // Interpolamos la escala para el modo videojuego (evitando distorsiones raras si es reflexión)
             if (transformacionSeleccionada == 2) {
@@ -221,8 +221,8 @@ int main() {
                 spriteCurrentScaleY = spriteTargetScaleY;
             }
             else {
-                spriteCurrentScaleX = LerpFloat(spriteStartScaleX, spriteTargetScaleX, smoothT);
-                spriteCurrentScaleY = LerpFloat(spriteStartScaleY, spriteTargetScaleY, smoothT);
+                spriteCurrentScaleX = InterpolarValor(spriteStartScaleX, spriteTargetScaleX, smoothT);
+                spriteCurrentScaleY = InterpolarValor(spriteStartScaleY, spriteTargetScaleY, smoothT);
             }
 
             // Aplicamos las transformaciones algebraicas vértice por vértice
